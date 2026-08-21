@@ -1,0 +1,64 @@
+.contact-actions{display:flex;gap:12px;flex-wrap:wrap}.contact-actions a{border:1px solid rgba(22,22,22,.25);border-radius:999px;color:var(--ink);font:12px var(--mono);padding:13px 18px;text-decoration:none}.contact-actions a:hover{background:var(--ink);color:var(--paper)}.floating-contacts{position:fixed;right:22px;bottom:22px;z-index:20;display:flex;align-items:center;gap:3px;padding:3px;border:1px solid rgba(255,255,255,.32);border-radius:14px;background:rgba(255,255,255,.28);box-shadow:0 8px 24px rgba(22,22,22,.12),inset 0 1px 0 rgba(255,255,255,.7);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);isolation:isolate}.floating-contacts::before,.floating-contacts::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:-1}.floating-contacts::before{transform:translateX(-1px);border:1px solid rgba(255,45,100,.28);mix-blend-mode:screen}.floating-contacts::after{transform:translateX(1px);border:1px solid rgba(0,180,255,.28);mix-blend-mode:screen}.floating-contacts a{display:inline-flex;align-items:center;gap:6px;border-radius:10px;color:var(--ink);font:10px var(--mono);padding:7px 8px;text-decoration:none;transition:background .2s ease,transform .2s ease}.floating-contacts a:hover{background:rgba(255,255,255,.58);transform:translateY(-1px)}.floating-contacts svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.5}@media(max-width:700px){.floating-contacts{right:12px;bottom:12px;left:auto}.floating-contacts a{padding:7px 8px}.contact-actions a{padding:11px 15px}}
+.project{margin-bottom:42px}
+
+/* Restore the previous floating CTA footprint while keeping its glass treatment. */
+.floating-contacts {
+	right: 22px;
+	bottom: 22px;
+	gap: 6px;
+	padding: 6px;
+	border-radius: 22px;
+}
+
+.floating-contacts a {
+	gap: 8px;
+	border-radius: 16px;
+	font-size: 11px;
+	padding: 10px 13px;
+}
+
+.floating-contacts svg {
+	width: 16px;
+	height: 16px;
+}
+
+@media (max-width: 700px) {
+	.floating-contacts {
+		right: 12px;
+		bottom: 12px;
+		left: 12px;
+	}
+
+	.floating-contacts a {
+		flex: 1;
+		justify-content: center;
+	}
+}
+
+/* Give the persistent CTA the full previous visual footprint. */
+.floating-contacts {
+	width: 260px;
+	min-width: 260px;
+	justify-content: center;
+	gap: 8px;
+	padding: 8px;
+}
+
+.floating-contacts a {
+	flex: 1;
+	justify-content: center;
+	padding: 12px 16px;
+	font-size: 12px;
+}
+
+.floating-contacts svg {
+	width: 18px;
+	height: 18px;
+}
+
+@media (max-width: 700px) {
+	.floating-contacts {
+		width: calc(100vw - 24px);
+		min-width: 0;
+	}
+}
