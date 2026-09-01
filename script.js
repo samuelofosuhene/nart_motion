@@ -18,3 +18,58 @@ const revealObserver = new IntersectionObserver((entries) => {
 }, { threshold: 0.12 });
 
 document.querySelectorAll('.reveal').forEach((element) => revealObserver.observe(element));
+
+const galleryModal = document.querySelector('[data-gallery-modal]');
+const galleryImages = document.querySelector('[data-gallery-images]');
+const galleryCollections = {
+  moosla: Array.from({ length: 30 }, (_, index) => `assets/projects/moosla/Artboard-${String(index + 1).padStart(2, '0')}.png`),
+  fliers: [
+    'assets/projects/fliers/B2B (1).png',
+    'assets/projects/fliers/BOBA_FESTA.png',
+    'assets/projects/fliers/D&D_press.png',
+    'assets/projects/fliers/KEJEFAIR_1.png',
+    'assets/projects/fliers/Kejefair_next.png',
+    'assets/projects/fliers/Kenten.png',
+    'assets/projects/fliers/Mc_2.png',
+    'assets/projects/fliers/monitor_fees.png',
+    'assets/projects/fliers/Salikod_05_Social.png',
+    'assets/projects/fliers/The Alpha_shop.png'
+  ]
+};
+
+const getGalleryPaths = (key) => galleryCollections[key].map((path) => encodeURI(path));
+
+document.querySelectorAll('[data-gallery]').forEach((trigger) => {
+  trigger.addEventListener('click', () => {
+    const key = trigger.dataset.gallery;
+    const galleryPaths = getGalleryPaths(key);
+    const label = key === 'fliers' ? 'Still graphics preview' : 'Moosla brand identity preview';
+
+    galleryImages.replaceChildren(...galleryPaths.map((path, index) => {
+      const image = document.createElement('img');
+      image.src = path;
+      image.alt = `${key === 'fliers' ? 'Still graphics' : 'Moosla brand identity'} work ${index + 1}`;
+      image.loading = index === 0 ? 'eager' : 'lazy';
+      return image;
+    }));
+
+    galleryModal.hidden = false;
+    galleryModal.setAttribute('aria-label', label);
+    galleryModal.querySelector('.gallery-modal-panel').setAttribute('aria-label', label);
+    document.body.classList.add('gallery-modal-open');
+  });
+});
+
+document.querySelectorAll('[data-gallery-close]').forEach((closeButton) => {
+  closeButton.addEventListener('click', () => {
+    galleryModal.hidden = true;
+    document.body.classList.remove('gallery-modal-open');
+  });
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && !galleryModal.hidden) {
+    galleryModal.hidden = true;
+    document.body.classList.remove('gallery-modal-open');
+  }
+});
