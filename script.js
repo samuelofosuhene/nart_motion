@@ -67,6 +67,51 @@ document.querySelectorAll('[data-gallery-close]').forEach((closeButton) => {
   });
 });
 
+const portraitCards = document.querySelectorAll('.project-feature-portrait');
+
+portraitCards.forEach((card) => {
+  const player = card.querySelector('.project-player--portrait');
+  const video = player?.querySelector('video');
+
+  if (!player || !video) return;
+
+  const closePortrait = () => {
+    card.classList.remove('is-expanded');
+    document.body.style.overflow = '';
+    video.pause();
+    video.currentTime = 0;
+  };
+
+  player.addEventListener('click', async () => {
+    const isExpanded = card.classList.toggle('is-expanded');
+    document.body.style.overflow = isExpanded ? 'hidden' : '';
+
+    if (isExpanded) {
+      try {
+        await video.play();
+      } catch (error) {
+        // Gesture-driven playback can be blocked until the user interacts; the video still remains visible.
+      }
+
+      if (typeof video.requestFullscreen === 'function') {
+        try {
+          await video.requestFullscreen();
+        } catch (error) {
+          // Fullscreen preference is optional; the expanded portrait layout still works.
+        }
+      }
+    } else {
+      closePortrait();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && card.classList.contains('is-expanded')) {
+      closePortrait();
+    }
+  });
+});
+
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && !galleryModal.hidden) {
     galleryModal.hidden = true;
