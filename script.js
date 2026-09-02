@@ -82,28 +82,34 @@ portraitCards.forEach((card) => {
     video.currentTime = 0;
   };
 
-  player.addEventListener('click', async () => {
-    const isExpanded = card.classList.toggle('is-expanded');
-    document.body.style.overflow = isExpanded ? 'hidden' : '';
+  const togglePortrait = async () => {
+    const isExpanded = card.classList.contains('is-expanded');
 
     if (isExpanded) {
-      try {
-        await video.play();
-      } catch (error) {
-        // Gesture-driven playback can be blocked until the user interacts; the video still remains visible.
-      }
-
-      if (typeof video.requestFullscreen === 'function') {
-        try {
-          await video.requestFullscreen();
-        } catch (error) {
-          // Fullscreen preference is optional; the expanded portrait layout still works.
-        }
-      }
-    } else {
       closePortrait();
+      return;
     }
-  });
+
+    card.classList.add('is-expanded');
+    document.body.style.overflow = 'hidden';
+
+    try {
+      await video.play();
+    } catch (error) {
+      // Playback can wait for the tap gesture to complete.
+    }
+
+    if (typeof video.requestFullscreen === 'function') {
+      try {
+        await video.requestFullscreen();
+      } catch (error) {
+        // Fullscreen is optional; the portrait overlay remains the primary view.
+      }
+    }
+  };
+
+  video.addEventListener('click', togglePortrait);
+  player.addEventListener('click', togglePortrait);
 
   document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' && card.classList.contains('is-expanded')) {
