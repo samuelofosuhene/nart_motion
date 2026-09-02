@@ -49,28 +49,6 @@
 	justify-content: center;
 	padding: 12px 16px;
 	font-size: 12px;
-	position: relative;
-	box-shadow: -1px 0 7px rgba(255, 35, 105, .22), 1px 0 7px rgba(0, 190, 255, .22);
-}
-
-.floating-contacts a::before,
-.floating-contacts a::after {
-	content: "";
-	position: absolute;
-	inset: 1px;
-	border-radius: inherit;
-	pointer-events: none;
-	opacity: .35;
-}
-
-.floating-contacts a::before {
-	border: 1px solid rgba(255, 35, 105, .42);
-	transform: translateX(-1px);
-}
-
-.floating-contacts a::after {
-	border: 1px solid rgba(0, 190, 255, .42);
-	transform: translateX(1px);
 }
 
 .floating-contacts svg {
