@@ -3,4 +3,10 @@
 
 .project-feature-portrait .project-image.project-player--portrait{width:min(1080px,100%);max-width:1080px;height:auto;aspect-ratio:1080/1720;margin-left:auto;margin-right:auto;background:#000}
 .project-feature-portrait .project-player--portrait>video{width:100%;height:100%;aspect-ratio:1080/1720;object-fit:contain;background:#000}
+.project-feature-portrait .project-image.project-player--portrait{width:100%;max-width:none;aspect-ratio:16/9}
+.project-feature-portrait .project-player--portrait>video{aspect-ratio:16/9;object-fit:cover}
+.project-feature-portrait.is-expanded{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:rgba(12,12,12,.96);padding:12px}
+.project-feature-portrait.is-expanded .project-image.project-player--portrait{width:min(1080px,calc(100vw - 24px),calc((100vh - 24px) * 1080 / 1720));max-width:none;aspect-ratio:1080/1720}
+.project-feature-portrait.is-expanded .project-player--portrait>video{width:100%;height:100%;aspect-ratio:1080/1720;object-fit:contain}
+.project-feature-portrait.is-expanded .project-meta{display:none}
 @media(max-width:700px){.project-feature-portrait .project-image.project-player--portrait{width:100%}}

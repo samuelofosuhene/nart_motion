@@ -67,6 +67,40 @@ document.querySelectorAll('[data-gallery-close]').forEach((closeButton) => {
   });
 });
 
+const portraitCard = document.querySelector('.project-feature-portrait');
+const portraitPlayer = portraitCard?.querySelector('.project-player--portrait');
+const portraitVideo = portraitPlayer?.querySelector('video');
+
+if (portraitCard && portraitPlayer && portraitVideo) {
+  const closePortrait = () => {
+    portraitCard.classList.remove('is-expanded');
+    document.body.style.overflow = '';
+    portraitVideo.pause();
+  };
+
+  portraitPlayer.addEventListener('click', async () => {
+    if (portraitCard.classList.contains('is-expanded')) {
+      closePortrait();
+      return;
+    }
+
+    portraitCard.classList.add('is-expanded');
+    document.body.style.overflow = 'hidden';
+
+    try {
+      await portraitVideo.play();
+    } catch (error) {
+      // Playback can wait for the tap gesture to complete.
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && portraitCard.classList.contains('is-expanded')) {
+      closePortrait();
+    }
+  });
+}
+
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && !galleryModal.hidden) {
     galleryModal.hidden = true;
