@@ -67,39 +67,112 @@ document.querySelectorAll('[data-gallery-close]').forEach((closeButton) => {
   });
 });
 
-const portraitCard = document.querySelector('.project-feature-portrait');
-const portraitPlayer = portraitCard?.querySelector('.project-player--portrait');
-const portraitVideo = portraitPlayer?.querySelector('video');
+const projectOverlay = document.createElement('div');
+projectOverlay.className = 'project-overlay';
+projectOverlay.setAttribute('aria-hidden', 'true');
+projectOverlay.innerHTML = '<div class="project-overlay-backdrop"></div><div class="project-overlay-content" role="dialog" aria-modal="true" aria-label="Project preview"></div>';
+document.body.appendChild(projectOverlay);
 
-if (portraitCard && portraitPlayer && portraitVideo) {
-  const closePortrait = () => {
-    portraitCard.classList.remove('is-expanded');
-    document.body.style.overflow = '';
-    portraitVideo.pause();
-  };
+let activeOverlayVideo;
 
-  portraitPlayer.addEventListener('click', async () => {
-    if (portraitCard.classList.contains('is-expanded')) {
-      closePortrait();
-      return;
-    }
+const trackProjectInteraction = (action, title) => {
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', action, { project_name: title });
+  }
+};
 
-    portraitCard.classList.add('is-expanded');
-    document.body.style.overflow = 'hidden';
+const getProjectStorageKey = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
-    try {
-      await portraitVideo.play();
-    } catch (error) {
-      // Playback can wait for the tap gesture to complete.
+const closeProjectOverlay = () => {
+  activeOverlayVideo?.pause();
+  activeOverlayVideo = null;
+  projectOverlay.classList.remove('is-open');
+  projectOverlay.setAttribute('aria-hidden', 'true');
+  projectOverlay.querySelector('.project-overlay-content').replaceChildren();
+  document.body.style.overflow = '';
+};
+
+const openProjectOverlay = async (card, video, title) => {
+  const preview = video.cloneNode(true);
+  preview.removeAttribute('id');
+  preview.controls = true;
+  preview.autoplay = true;
+  preview.muted = false;
+  preview.className = 'project-overlay-video';
+  preview.currentTime = video.currentTime;
+  activeOverlayVideo = preview;
+  projectOverlay.querySelector('.project-overlay-content').replaceChildren(preview);
+  projectOverlay.setAttribute('aria-label', `${card.querySelector('h2')?.textContent || 'Project'} preview`);
+  projectOverlay.classList.add('is-open');
+  projectOverlay.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+
+  const viewKey = `nart-motion-views-${getProjectStorageKey(title)}`;
+  localStorage.setItem(viewKey, String(Number(localStorage.getItem(viewKey) || 0) + 1));
+  card.querySelector('[data-view-count]').textContent = localStorage.getItem(viewKey);
+  trackProjectInteraction('project_view', title);
+
+  try {
+    await preview.play();
+  } catch (error) {
+    // Playback can wait for the tap gesture to complete.
+  }
+};
+
+document.querySelectorAll('.project').forEach((card, index) => {
+  const title = card.querySelector('h2')?.textContent || `Project ${index + 1}`;
+  const storageKey = getProjectStorageKey(title);
+  const meta = card.querySelector('.project-meta');
+  const media = card.querySelector('.project-player');
+  if (!meta) return;
+
+  const actions = document.createElement('div');
+  actions.className = 'project-actions';
+  actions.innerHTML = `<button type="button" data-like-project aria-pressed="false">♡ <span data-like-count>0</span></button><button type="button" class="project-view-count" data-view-project>◉ <span data-view-count>0</span></button>`;
+  meta.after(actions);
+
+  const likeKey = `nart-motion-likes-${storageKey}`;
+  const viewKey = `nart-motion-views-${storageKey}`;
+  const likeCount = actions.querySelector('[data-like-count]');
+  const viewCount = actions.querySelector('[data-view-count]');
+  const likeButton = actions.querySelector('[data-like-project]');
+  likeCount.textContent = localStorage.getItem(likeKey) || '0';
+  viewCount.textContent = localStorage.getItem(viewKey) || '0';
+
+  likeButton.addEventListener('click', () => {
+    const nextCount = Number(localStorage.getItem(likeKey) || 0) + 1;
+    localStorage.setItem(likeKey, String(nextCount));
+    likeCount.textContent = String(nextCount);
+    likeButton.setAttribute('aria-pressed', 'true');
+    trackProjectInteraction('project_like', title);
+  });
+
+  const video = media?.querySelector('video');
+  const galleryTrigger = card.querySelector('[data-gallery]');
+  video?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    openProjectOverlay(card, video, title);
+  });
+
+  actions.querySelector('[data-view-project]').addEventListener('click', () => {
+    if (video) {
+      openProjectOverlay(card, video, title);
+    } else {
+      galleryTrigger?.click();
     }
   });
 
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && portraitCard.classList.contains('is-expanded')) {
-      closePortrait();
-    }
+  galleryTrigger?.addEventListener('click', () => {
+    const nextCount = Number(localStorage.getItem(viewKey) || 0) + 1;
+    localStorage.setItem(viewKey, String(nextCount));
+    viewCount.textContent = String(nextCount);
   });
-}
+});
+
+projectOverlay.querySelector('.project-overlay-backdrop').addEventListener('click', closeProjectOverlay);
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closeProjectOverlay();
+});
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && !galleryModal.hidden) {
