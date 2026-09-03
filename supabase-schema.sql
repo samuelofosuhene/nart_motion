@@ -42,9 +42,9 @@ begin
   insert into public.project_stats (project_key) values (p_project_key)
   on conflict (project_key) do nothing;
 
-  update public.project_visitors
+  update public.project_visitors as pv
   set viewed = true
-  where project_key = p_project_key and visitor_id = p_visitor_id and not viewed;
+  where pv.project_key = p_project_key and pv.visitor_id = p_visitor_id and not pv.viewed;
   view_was_recorded := found;
 
   if not exists (select 1 from public.project_visitors where project_key = p_project_key and visitor_id = p_visitor_id) then
@@ -53,7 +53,9 @@ begin
   end if;
 
   if view_was_recorded then
-    update public.project_stats set views = views + 1 where project_key = p_project_key;
+    update public.project_stats as ps
+    set views = ps.views + 1
+    where ps.project_key = p_project_key;
   end if;
 
   return query select * from public.get_project_stats(p_project_key, p_visitor_id);

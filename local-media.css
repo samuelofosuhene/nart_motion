@@ -36,6 +36,6 @@
 .brands-marquee{overflow:hidden;margin:0 -7vw}
 .brands-track{display:flex;width:max-content;animation:brands-slide 42s linear infinite}
 .brands-set{display:flex;align-items:center;gap:clamp(28px,5vw,72px);padding:0 36px}
-.brands-set img{display:block;width:clamp(110px,12vw,180px);height:clamp(54px,7vw,86px);object-fit:contain;filter:grayscale(1);opacity:.72;flex:none}
+.brands-set img{display:block;width:150px;height:64px;object-fit:contain;object-position:center;filter:grayscale(1);opacity:.72;flex:none}
 @keyframes brands-slide{from{transform:translateX(-50%)}to{transform:translateX(0)}}
 @media(prefers-reduced-motion:reduce){.brands-track{animation:none}}
