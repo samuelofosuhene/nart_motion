@@ -62,3 +62,9 @@
 		min-width: 0;
 	}
 }
+
+.floating-contacts a:hover {
+	background: var(--purple);
+	color: var(--paper);
+	transform: translateY(-1px) scale(1.04);
+}
