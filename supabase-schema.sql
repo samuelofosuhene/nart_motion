@@ -60,7 +60,9 @@ begin
 end;
 $$;
 
-create or replace function public.toggle_project_like(p_project_key text, p_visitor_id uuid)
+drop function if exists public.toggle_project_like(text, uuid);
+
+create function public.toggle_project_like(p_project_key text, p_visitor_id uuid)
 returns table (views bigint, likes bigint, liked boolean)
 language plpgsql
 security definer
@@ -76,11 +78,12 @@ begin
   values (p_project_key, p_visitor_id)
   on conflict (project_key, visitor_id) do nothing;
 
-  select not pv.liked into next_liked from public.project_visitors as pv
+  select not pv.liked into next_liked from public.project_visitors pv
   where pv.project_key = p_project_key and pv.visitor_id = p_visitor_id;
 
-  update public.project_visitors set liked = next_liked
-  where project_key = p_project_key and visitor_id = p_visitor_id;
+  update public.project_visitors pv
+  set liked = next_liked
+  where pv.project_key = p_project_key and pv.visitor_id = p_visitor_id;
 
   update public.project_stats as ps
   set likes = greatest(0, ps.likes + case when next_liked then 1 else -1 end)
