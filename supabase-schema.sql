@@ -76,15 +76,15 @@ begin
   values (p_project_key, p_visitor_id)
   on conflict (project_key, visitor_id) do nothing;
 
-  select not liked into next_liked from public.project_visitors
-  where project_key = p_project_key and visitor_id = p_visitor_id;
+  select not pv.liked into next_liked from public.project_visitors as pv
+  where pv.project_key = p_project_key and pv.visitor_id = p_visitor_id;
 
   update public.project_visitors set liked = next_liked
   where project_key = p_project_key and visitor_id = p_visitor_id;
 
-  update public.project_stats
-  set likes = greatest(0, likes + case when next_liked then 1 else -1 end)
-  where project_key = p_project_key;
+  update public.project_stats as ps
+  set likes = greatest(0, ps.likes + case when next_liked then 1 else -1 end)
+  where ps.project_key = p_project_key;
 
   return query select * from public.get_project_stats(p_project_key, p_visitor_id);
 end;
