@@ -70,10 +70,11 @@ document.querySelectorAll('[data-gallery-close]').forEach((closeButton) => {
 const projectOverlay = document.createElement('div');
 projectOverlay.className = 'project-overlay';
 projectOverlay.setAttribute('aria-hidden', 'true');
-projectOverlay.innerHTML = '<div class="project-overlay-backdrop"></div><div class="project-overlay-content" role="dialog" aria-modal="true" aria-label="Project preview"></div>';
+projectOverlay.innerHTML = '<div class="project-overlay-backdrop"></div><div class="project-overlay-content" role="dialog" aria-modal="true" aria-label="Project preview"></div><button class="project-overlay-close" type="button" aria-label="Close full-screen preview">×</button>';
 document.body.appendChild(projectOverlay);
 
 let activeOverlayVideo;
+let overlayTouchStartY;
 
 const trackProjectInteraction = (action, title) => {
   if (typeof window.gtag === 'function') {
@@ -115,7 +116,7 @@ const openProjectOverlay = async (card, video, title) => {
   preview.className = `project-overlay-video${card.classList.contains('project-feature-portrait') ? ' project-overlay-video--portrait' : ''}`;
   preview.currentTime = playbackPosition;
   activeOverlayVideo = preview;
-  projectOverlay.querySelector('.project-overlay-content').replaceChildren(preview);
+  projectOverlay.querySelector('.project-overlay-content').appendChild(preview);
   projectOverlay.setAttribute('aria-label', `${card.querySelector('h2')?.textContent || 'Project'} preview`);
   projectOverlay.classList.add('is-open');
   projectOverlay.setAttribute('aria-hidden', 'false');
@@ -210,6 +211,27 @@ document.querySelectorAll('.project').forEach((card, index) => {
   galleryTrigger?.addEventListener('click', () => {
     recordProjectView(card, title);
   });
+});
+
+projectOverlay.querySelector('.project-overlay-close').addEventListener('click', (event) => {
+  event.stopPropagation();
+  closeProjectOverlay();
+});
+
+projectOverlay.addEventListener('pointerdown', (event) => {
+  if (event.target === projectOverlay || event.target.classList.contains('project-overlay-backdrop')) {
+    closeProjectOverlay();
+  }
+});
+
+projectOverlay.addEventListener('pointerdown', (event) => {
+  if (event.pointerType !== 'mouse') overlayTouchStartY = event.clientY;
+});
+
+projectOverlay.addEventListener('pointerup', (event) => {
+  if (overlayTouchStartY === undefined) return;
+  if (event.clientY - overlayTouchStartY > 80) closeProjectOverlay();
+  overlayTouchStartY = undefined;
 });
 
 projectOverlay.addEventListener('click', (event) => {
