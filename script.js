@@ -86,6 +86,12 @@ const getProjectStorageKey = (title) => title.toLowerCase().replace(/[^a-z0-9]+/
 
 const closeProjectOverlay = () => {
   activeOverlayVideo?.pause();
+  if (document.fullscreenElement && document.exitFullscreen) {
+    document.exitFullscreen().catch(() => {});
+  }
+  if (activeOverlayVideo?.webkitDisplayingFullscreen && activeOverlayVideo.webkitExitFullscreen) {
+    activeOverlayVideo.webkitExitFullscreen();
+  }
   activeOverlayVideo = null;
   projectOverlay.classList.remove('is-open');
   projectOverlay.setAttribute('aria-hidden', 'true');
@@ -218,6 +224,12 @@ projectOverlay.querySelector('.project-overlay-close').addEventListener('click',
   closeProjectOverlay();
 });
 
+projectOverlay.querySelector('.project-overlay-close').addEventListener('touchend', (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  closeProjectOverlay();
+}, { passive: false });
+
 projectOverlay.addEventListener('pointerdown', (event) => {
   if (event.target === projectOverlay || event.target.classList.contains('project-overlay-backdrop')) {
     closeProjectOverlay();
@@ -233,6 +245,13 @@ projectOverlay.addEventListener('pointerup', (event) => {
   if (event.clientY - overlayTouchStartY > 80) closeProjectOverlay();
   overlayTouchStartY = undefined;
 });
+
+projectOverlay.addEventListener('touchend', (event) => {
+  if (event.target === projectOverlay || event.target.classList.contains('project-overlay-backdrop')) {
+    event.preventDefault();
+    closeProjectOverlay();
+  }
+}, { passive: false });
 
 projectOverlay.addEventListener('click', (event) => {
   if (event.target === projectOverlay || event.target.classList.contains('project-overlay-backdrop')) {
