@@ -6,6 +6,13 @@ menuToggle?.addEventListener('click', () => {
   menuToggle.setAttribute('aria-expanded', String(isOpen));
 });
 
+navLinks?.querySelectorAll('a').forEach((link) => {
+  link.addEventListener('click', () => {
+    navLinks.classList.remove('is-open');
+    menuToggle?.setAttribute('aria-expanded', 'false');
+  });
+});
+
 document.querySelector('#year').textContent = new Date().getFullYear();
 
 const revealObserver = new IntersectionObserver((entries) => {
