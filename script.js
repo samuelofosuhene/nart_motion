@@ -92,14 +92,28 @@ const closeProjectOverlay = () => {
   document.body.style.overflow = '';
 };
 
+const recordProjectView = (card, title) => {
+  const viewKey = `nart-motion-views-${getProjectStorageKey(title)}`;
+  const seenKey = `${viewKey}-seen`;
+  if (localStorage.getItem(seenKey) === 'true') return;
+
+  const nextCount = Number(localStorage.getItem(viewKey) || 0) + 1;
+  localStorage.setItem(viewKey, String(nextCount));
+  localStorage.setItem(seenKey, 'true');
+  card.querySelector('[data-view-count]').textContent = String(nextCount);
+  trackProjectInteraction('project_view', title);
+};
+
 const openProjectOverlay = async (card, video, title) => {
+  const playbackPosition = video.currentTime;
+  video.pause();
   const preview = video.cloneNode(true);
   preview.removeAttribute('id');
   preview.controls = true;
   preview.autoplay = true;
   preview.muted = false;
   preview.className = 'project-overlay-video';
-  preview.currentTime = video.currentTime;
+  preview.currentTime = playbackPosition;
   activeOverlayVideo = preview;
   projectOverlay.querySelector('.project-overlay-content').replaceChildren(preview);
   projectOverlay.setAttribute('aria-label', `${card.querySelector('h2')?.textContent || 'Project'} preview`);
@@ -107,10 +121,7 @@ const openProjectOverlay = async (card, video, title) => {
   projectOverlay.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
 
-  const viewKey = `nart-motion-views-${getProjectStorageKey(title)}`;
-  localStorage.setItem(viewKey, String(Number(localStorage.getItem(viewKey) || 0) + 1));
-  card.querySelector('[data-view-count]').textContent = localStorage.getItem(viewKey);
-  trackProjectInteraction('project_view', title);
+  recordProjectView(card, title);
 
   try {
     await preview.play();
@@ -128,7 +139,7 @@ document.querySelectorAll('.project').forEach((card, index) => {
 
   const actions = document.createElement('div');
   actions.className = 'project-actions';
-  actions.innerHTML = `<button type="button" data-like-project aria-pressed="false">♡ <span data-like-count>0</span></button><button type="button" class="project-view-count" data-view-project>◉ <span data-view-count>0</span></button>`;
+  actions.innerHTML = `<button type="button" class="project-action-button" data-like-project aria-pressed="false"><span data-like-icon>♡</span> <span data-like-count>0</span></button><button type="button" class="project-action-button project-view-count" data-view-project>◉ <span data-view-count>0</span></button><button type="button" class="project-action-button" data-share-project>↗ Share</button>`;
   meta.after(actions);
 
   const likeKey = `nart-motion-likes-${storageKey}`;
@@ -136,15 +147,26 @@ document.querySelectorAll('.project').forEach((card, index) => {
   const likeCount = actions.querySelector('[data-like-count]');
   const viewCount = actions.querySelector('[data-view-count]');
   const likeButton = actions.querySelector('[data-like-project]');
+  const likeIcon = actions.querySelector('[data-like-icon]');
+  const shareButton = actions.querySelector('[data-share-project]');
   likeCount.textContent = localStorage.getItem(likeKey) || '0';
   viewCount.textContent = localStorage.getItem(viewKey) || '0';
+  const likedKey = `${likeKey}-by-this-visitor`;
+  const updateLikeState = () => {
+    const liked = localStorage.getItem(likedKey) === 'true';
+    likeButton.setAttribute('aria-pressed', String(liked));
+    likeIcon.textContent = liked ? '♥' : '♡';
+  };
+  updateLikeState();
 
   likeButton.addEventListener('click', () => {
-    const nextCount = Number(localStorage.getItem(likeKey) || 0) + 1;
+    const liked = localStorage.getItem(likedKey) === 'true';
+    const nextCount = Math.max(0, Number(localStorage.getItem(likeKey) || 0) + (liked ? -1 : 1));
     localStorage.setItem(likeKey, String(nextCount));
+    localStorage.setItem(likedKey, String(!liked));
     likeCount.textContent = String(nextCount);
-    likeButton.setAttribute('aria-pressed', 'true');
-    trackProjectInteraction('project_like', title);
+    updateLikeState();
+    trackProjectInteraction(liked ? 'project_dislike' : 'project_like', title);
   });
 
   const video = media?.querySelector('video');
@@ -162,14 +184,39 @@ document.querySelectorAll('.project').forEach((card, index) => {
     }
   });
 
+  shareButton.addEventListener('click', async () => {
+    const shareUrl = window.location.href.split('?')[0] + `#${storageKey}`;
+    const shareText = `${title} by Nart_Motion`;
+    if (navigator.share) {
+      await navigator.share({ title: shareText, text: shareText, url: shareUrl }).catch(() => {});
+      return;
+    }
+
+    const existingMenu = actions.querySelector('.share-menu');
+    if (existingMenu) {
+      existingMenu.remove();
+      shareButton.setAttribute('aria-expanded', 'false');
+      return;
+    }
+
+    const menu = document.createElement('div');
+    menu.className = 'share-menu';
+    menu.innerHTML = `<a href="https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}" target="_blank" rel="noreferrer">WhatsApp</a><a href="mailto:?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent(shareUrl)}">Email</a>`;
+    shareButton.after(menu);
+    shareButton.setAttribute('aria-expanded', 'true');
+    trackProjectInteraction('project_share', title);
+  });
+
   galleryTrigger?.addEventListener('click', () => {
-    const nextCount = Number(localStorage.getItem(viewKey) || 0) + 1;
-    localStorage.setItem(viewKey, String(nextCount));
-    viewCount.textContent = String(nextCount);
+    recordProjectView(card, title);
   });
 });
 
-projectOverlay.querySelector('.project-overlay-backdrop').addEventListener('click', closeProjectOverlay);
+projectOverlay.addEventListener('click', (event) => {
+  if (event.target === projectOverlay || event.target.classList.contains('project-overlay-backdrop')) {
+    closeProjectOverlay();
+  }
+});
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape') closeProjectOverlay();
 });
