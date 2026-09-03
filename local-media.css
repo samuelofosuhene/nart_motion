@@ -14,9 +14,9 @@
 .project-carousel .project-meta{margin-left:0;margin-right:0}
 .project-actions{display:flex;align-items:center;gap:14px;grid-column:1/-1;margin-top:12px;padding-top:10px;border-top:1px solid var(--line);font:11px var(--mono);position:relative;flex-wrap:wrap}
 .project-actions button{border:0;background:none;color:inherit;padding:4px 0;font:inherit;cursor:pointer}
-.project-action-button{min-height:28px}
+.project-action-button{min-height:28px;display:inline-flex;align-items:center;gap:5px}
 .project-actions button:hover,.project-actions button[aria-pressed="true"]{color:#1687d9}
-.project-action-button:first-child,.project-view-count{font-size:16px}
+.project-action-icon,.project-action-count{font-size:14px;line-height:1}
 .project-view-count{opacity:.78}
 .share-menu{display:flex;gap:10px;align-items:center;padding:5px 0;font-size:10px}
 .share-menu a{color:inherit;text-decoration:none;border-bottom:1px solid currentColor}
@@ -25,4 +25,5 @@
 .project-overlay-backdrop{position:absolute;inset:0}
 .project-overlay-content{position:relative;z-index:1;display:grid;place-items:center;width:min(100%,1080px);height:min(100%,calc(100vh - 48px));cursor:default}
 .project-overlay-video{display:block;width:auto;max-width:100%;height:auto;max-height:100%;object-fit:contain;background:#000}
+.project-overlay-video--portrait{width:min(calc(100vw - 48px),calc((100vh - 48px) * 1080 / 1720));height:auto;max-width:none;max-height:calc(100vh - 48px);aspect-ratio:1080/1720;object-fit:contain}
 @media(max-width:700px){.project-carousel{grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 12px}.project-actions{gap:9px;font-size:9px}.project-overlay{padding:12px}.project-overlay-content{height:calc(100vh - 24px)}}

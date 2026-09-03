@@ -112,7 +112,7 @@ const openProjectOverlay = async (card, video, title) => {
   preview.controls = true;
   preview.autoplay = true;
   preview.muted = false;
-  preview.className = 'project-overlay-video';
+  preview.className = `project-overlay-video${card.classList.contains('project-feature-portrait') ? ' project-overlay-video--portrait' : ''}`;
   preview.currentTime = playbackPosition;
   activeOverlayVideo = preview;
   projectOverlay.querySelector('.project-overlay-content').replaceChildren(preview);
@@ -139,7 +139,7 @@ document.querySelectorAll('.project').forEach((card, index) => {
 
   const actions = document.createElement('div');
   actions.className = 'project-actions';
-  actions.innerHTML = `<button type="button" class="project-action-button" data-like-project aria-pressed="false"><span data-like-icon>♡</span> <span data-like-count>0</span></button><button type="button" class="project-action-button project-view-count" data-view-project>◉ <span data-view-count>0</span></button><button type="button" class="project-action-button" data-share-project>↗ Share</button>`;
+  actions.innerHTML = `<button type="button" class="project-action-button" data-like-project aria-label="Like ${title}" aria-pressed="false"><span class="project-action-icon" data-like-icon>♡</span> <span class="project-action-count" data-like-count>0</span></button><button type="button" class="project-action-button project-view-count" data-view-project aria-label="View ${title}"><span class="project-action-icon">◉</span> <span class="project-action-count" data-view-count>0</span></button><button type="button" class="project-action-button" data-share-project aria-label="Share ${title}" aria-expanded="false"><span class="project-action-icon" aria-hidden="true">↗</span></button>`;
   meta.after(actions);
 
   const likeKey = `nart-motion-likes-${storageKey}`;
