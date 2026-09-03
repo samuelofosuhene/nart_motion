@@ -195,9 +195,11 @@ document.querySelectorAll('.project').forEach((card, index) => {
 
   const video = media?.querySelector('video');
   const galleryTrigger = card.querySelector('[data-gallery]');
-  video?.addEventListener('click', (event) => {
+  media?.addEventListener('click', (event) => {
     event.stopPropagation();
-    openProjectOverlay(card, video, title);
+    if (video) {
+      openProjectOverlay(card, video, title);
+    }
   });
 
   actions.querySelector('[data-view-project]').addEventListener('click', () => {
