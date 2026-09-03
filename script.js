@@ -75,6 +75,11 @@ document.body.appendChild(projectOverlay);
 
 let activeOverlayVideo;
 let overlayTouchStartY;
+const supabaseUrl = 'https://qpeamauhipgmuzuauawo.supabase.co';
+const supabaseKey = 'sb_publishable_qSu9ZJf_oTWbYTnSPvFt3A_2ENFdb-K';
+const visitorIdKey = 'nart-motion-visitor-id';
+const visitorId = localStorage.getItem(visitorIdKey) || crypto.randomUUID();
+localStorage.setItem(visitorIdKey, visitorId);
 
 const trackProjectInteraction = (action, title) => {
   if (typeof window.gtag === 'function') {
@@ -99,16 +104,34 @@ const closeProjectOverlay = () => {
   document.body.style.overflow = '';
 };
 
-const recordProjectView = (card, title) => {
-  const viewKey = `nart-motion-views-${getProjectStorageKey(title)}`;
-  const seenKey = `${viewKey}-seen`;
-  if (localStorage.getItem(seenKey) === 'true') return;
+const supabaseRpc = async (functionName, payload) => {
+  const response = await fetch(`${supabaseUrl}/rest/v1/rpc/${functionName}`, {
+    method: 'POST',
+    headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  if (!response.ok) throw new Error(`Supabase request failed: ${response.status}`);
+  const result = await response.json();
+  return Array.isArray(result) ? result[0] : result;
+};
 
-  const nextCount = Number(localStorage.getItem(viewKey) || 0) + 1;
-  localStorage.setItem(viewKey, String(nextCount));
-  localStorage.setItem(seenKey, 'true');
-  card.querySelector('[data-view-count]').textContent = String(nextCount);
-  trackProjectInteraction('project_view', title);
+const updateProjectStats = (card, stats) => {
+  if (!stats) return;
+  card.querySelector('[data-view-count]').textContent = stats.views ?? 0;
+  card.querySelector('[data-like-count]').textContent = stats.likes ?? 0;
+  const likeButton = card.querySelector('[data-like-project]');
+  likeButton?.setAttribute('aria-pressed', String(Boolean(stats.liked)));
+  card.querySelector('[data-like-icon]')?.classList.toggle('is-liked', Boolean(stats.liked));
+};
+
+const recordProjectView = async (card, title) => {
+  try {
+    const stats = await supabaseRpc('record_project_view', { p_project_key: getProjectStorageKey(title), p_visitor_id: visitorId });
+    updateProjectStats(card, stats);
+    trackProjectInteraction('project_view', title);
+  } catch (error) {
+    console.warn('Shared project view unavailable.', error);
+  }
 };
 
 const openProjectOverlay = async (card, video, title) => {
@@ -146,34 +169,28 @@ document.querySelectorAll('.project').forEach((card, index) => {
 
   const actions = document.createElement('div');
   actions.className = 'project-actions';
-  actions.innerHTML = `<button type="button" class="project-action-button" data-like-project aria-label="Like ${title}" aria-pressed="false"><span class="project-action-icon" data-like-icon>♡</span> <span class="project-action-count" data-like-count>0</span></button><button type="button" class="project-action-button project-view-count" data-view-project aria-label="View ${title}"><span class="project-action-icon">◉</span> <span class="project-action-count" data-view-count>0</span></button><button type="button" class="project-action-button" data-share-project aria-label="Share ${title}" aria-expanded="false"><span class="project-action-icon" aria-hidden="true">↗</span></button>`;
+  actions.innerHTML = `<button type="button" class="project-action-button" data-like-project aria-label="Like ${title}" aria-pressed="false"><svg class="project-action-icon" data-like-icon viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.9c0 5.1-8.8 10.2-8.8 10.2S3.2 14 3.2 8.9A4.7 4.7 0 0 1 12 6.4a4.7 4.7 0 0 1 8.8 2.5Z" /></svg><span class="project-action-count" data-like-count>0</span></button><button type="button" class="project-action-button project-view-count" data-view-project aria-label="View ${title}"><svg class="project-action-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg><span class="project-action-count" data-view-count>0</span></button><button type="button" class="project-action-button" data-share-project aria-label="Share ${title}" aria-expanded="false"><svg class="project-action-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" /><path d="m8.2 11 7.5-4.4M8.2 13l7.5 4.4" /></svg></button>`;
   meta.after(actions);
 
-  const likeKey = `nart-motion-likes-${storageKey}`;
-  const viewKey = `nart-motion-views-${storageKey}`;
   const likeCount = actions.querySelector('[data-like-count]');
   const viewCount = actions.querySelector('[data-view-count]');
   const likeButton = actions.querySelector('[data-like-project]');
   const likeIcon = actions.querySelector('[data-like-icon]');
   const shareButton = actions.querySelector('[data-share-project]');
-  likeCount.textContent = localStorage.getItem(likeKey) || '0';
-  viewCount.textContent = localStorage.getItem(viewKey) || '0';
-  const likedKey = `${likeKey}-by-this-visitor`;
-  const updateLikeState = () => {
-    const liked = localStorage.getItem(likedKey) === 'true';
-    likeButton.setAttribute('aria-pressed', String(liked));
-    likeIcon.textContent = liked ? '♥' : '♡';
-  };
-  updateLikeState();
+  likeCount.textContent = '0';
+  viewCount.textContent = '0';
+  supabaseRpc('get_project_stats', { p_project_key: storageKey, p_visitor_id: visitorId })
+    .then((stats) => updateProjectStats(card, stats))
+    .catch((error) => console.warn('Shared project stats unavailable.', error));
 
-  likeButton.addEventListener('click', () => {
-    const liked = localStorage.getItem(likedKey) === 'true';
-    const nextCount = Math.max(0, Number(localStorage.getItem(likeKey) || 0) + (liked ? -1 : 1));
-    localStorage.setItem(likeKey, String(nextCount));
-    localStorage.setItem(likedKey, String(!liked));
-    likeCount.textContent = String(nextCount);
-    updateLikeState();
-    trackProjectInteraction(liked ? 'project_dislike' : 'project_like', title);
+  likeButton.addEventListener('click', async () => {
+    try {
+      const stats = await supabaseRpc('toggle_project_like', { p_project_key: storageKey, p_visitor_id: visitorId });
+      updateProjectStats(card, stats);
+      trackProjectInteraction(stats.liked ? 'project_like' : 'project_dislike', title);
+    } catch (error) {
+      console.warn('Shared project like unavailable.', error);
+    }
   });
 
   const video = media?.querySelector('video');

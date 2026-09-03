@@ -16,7 +16,9 @@
 .project-actions button{border:0;background:none;color:inherit;padding:4px 0;font:inherit;cursor:pointer}
 .project-action-button{min-height:28px;display:inline-flex;align-items:center;gap:5px}
 .project-actions button:hover,.project-actions button[aria-pressed="true"]{color:#1687d9}
-.project-action-icon,.project-action-count{font-size:14px;line-height:1}
+.project-action-icon{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.project-action-icon.is-liked{fill:currentColor}
+.project-action-count{font-size:14px;line-height:1;min-width:1ch;text-align:center}
 .project-view-count{opacity:.78}
 .share-menu{display:flex;gap:10px;align-items:center;padding:5px 0;font-size:10px}
 .share-menu a{color:inherit;text-decoration:none;border-bottom:1px solid currentColor}
