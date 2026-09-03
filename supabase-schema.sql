@@ -60,9 +60,7 @@ begin
 end;
 $$;
 
-drop function if exists public.toggle_project_like(text, uuid);
-
-create function public.toggle_project_like(p_project_key text, p_visitor_id uuid)
+create or replace function public.toggle_project_like(p_project_key text, p_visitor_id uuid)
 returns table (views bigint, likes bigint, liked boolean)
 language plpgsql
 security definer
