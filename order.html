@@ -435,7 +435,7 @@
       });
       if (!response.ok) throw new Error(`Email delivery failed: ${response.status}`);
       const result = await response.json();
-      if (result.success === false) throw new Error('Email delivery was not accepted.');
+      if (result.success === false) throw new Error(result.message || 'Email delivery was not accepted.');
       return result;
     };
 
@@ -504,7 +504,9 @@
         await sendOrderEmail(order, pdfUrl);
         showSuccess(pdfUrl);
       } catch (error) {
-        statusNode.textContent = 'The order could not be sent. Please try again.';
+        statusNode.textContent = error.message.includes('activate') || error.message.includes('server')
+          ? 'Email delivery needs one-time FormSubmit activation from the deployed site.'
+          : 'The order could not be sent. Please try again.';
         console.error(error);
       } finally {
         submitButton.disabled = false;
