@@ -13,7 +13,8 @@ navLinks?.querySelectorAll('a').forEach((link) => {
   });
 });
 
-document.querySelector('#year').textContent = new Date().getFullYear();
+const yearNode = document.querySelector('#year');
+if (yearNode) yearNode.textContent = new Date().getFullYear();
 
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
@@ -192,11 +193,21 @@ document.querySelectorAll('.project').forEach((card, index) => {
 
   const video = media?.querySelector('video');
   const galleryTrigger = card.querySelector('[data-gallery]');
-  media?.addEventListener('click', (event) => {
+  const projectMedia = card.querySelector('.project-image');
+  let lastMediaActivation = 0;
+  const openMediaPreview = (event) => {
+    if (Date.now() - lastMediaActivation < 350) return;
+    lastMediaActivation = Date.now();
     event.stopPropagation();
     if (video) {
       openProjectOverlay(card, video, title);
+    } else {
+      recordProjectView(card, title);
     }
+  };
+  projectMedia?.addEventListener('click', openMediaPreview);
+  projectMedia?.addEventListener('pointerup', (event) => {
+    if (event.pointerType !== 'mouse') openMediaPreview(event);
   });
 
   actions.querySelector('[data-view-project]').addEventListener('click', () => {
@@ -275,7 +286,6 @@ document.querySelectorAll('[data-open-hire]').forEach((trigger) => {
     event.preventDefault();
     hireModal?.classList.add('is-open');
     hireModal?.setAttribute('aria-hidden', 'false');
-    hireModal?.querySelector('input')?.focus();
   });
 });
 
@@ -290,6 +300,31 @@ hireForm?.addEventListener('submit', (event) => {
   const description = hireForm.querySelector('#hire-description').value.trim();
   const subject = `Hire enquiry - ${location} - Nart_Motion`;
   const body = `Hello Nart,\n\nI would like to hire you for a ${location.toLowerCase()} project.\n\nWork description:\n${description}\n\nPlease reply to me at: ${email}`;
-  window.location.href = `mailto:branart4@gmail.com?reply-to=${encodeURIComponent(email)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  closeHireModal();
+  const submitButton = hireForm.querySelector('button[type="submit"]');
+  submitButton.disabled = true;
+  fetch('https://formsubmit.co/ajax/branart4@gmail.com', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({
+      _subject: subject,
+      _replyto: email,
+      _captcha: 'false',
+      _template: 'table',
+      message: body,
+      project_setup: location,
+      work_description: description
+    })
+  }).then(async (response) => {
+    if (!response.ok) throw new Error(`Hire delivery failed: ${response.status}`);
+    const result = await response.json();
+    if (result.success === false) throw new Error('Hire delivery was not accepted.');
+    closeHireModal();
+    const whatsappText = `New hire enquiry from ${email}. Setup: ${location}.\n\n${description}`;
+    window.open(`https://wa.me/233541723985?text=${encodeURIComponent(whatsappText)}`, '_blank', 'noopener,noreferrer');
+  }).catch((error) => {
+    console.error(error);
+    hireForm.querySelector('.runtime-note').textContent = 'Delivery is unavailable. Please try again.';
+  }).finally(() => {
+    submitButton.disabled = false;
+  });
 });

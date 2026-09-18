@@ -1992,6 +1992,106 @@ a { color: inherit; }
   .home-body .site-footer { justify-content: space-between; }
 }
 
+/* Mobile composition: one calm column, touch-sized media, and no Safari zoom. */
+@media (max-width: 700px) {
+  .home-body .artlist-hero {
+    min-height: 0;
+    height: auto;
+    aspect-ratio: 16 / 10;
+  }
+
+  .home-body .hero-content {
+    min-height: 0;
+    height: 100%;
+    padding: 62px 18px 24px;
+  }
+
+  .home-body .hero-title { font-size: 34px; }
+  .home-body .hero-title .script-word { font-size: 50px; }
+  .home-body .hero-tagline { margin-top: 10px; font-size: 12px; }
+  .home-body .hero-actions { margin-top: 16px; }
+  .home-body .hero-description { display: none; }
+
+  .home-body .work.section-wrap {
+    width: 100%;
+    padding: 28px 12px 48px;
+  }
+
+  .home-body .project-carousel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+    gap: 12px;
+  }
+
+  .home-body .project,
+  .home-body .project:nth-child(n) {
+    grid-column: auto;
+    grid-row: auto;
+    width: 100%;
+    height: 230px;
+    min-height: 0;
+  }
+
+  .home-body .project:nth-child(1),
+  .home-body .project:nth-child(4),
+  .home-body .project:nth-child(8),
+  .home-body .project:nth-child(10) { height: 250px; }
+
+  .home-body .project:nth-child(7) { height: 390px; }
+  .home-body .project-image,
+  .home-body .project-image.project-player,
+  .home-body .project-gallery-trigger { position: absolute; inset: 0; }
+  .home-body .project-player > video,
+  .home-body .project-gallery-trigger img { pointer-events: none; }
+  .home-body .project-meta { padding: 0 16px 20px; }
+  .home-body .project-meta h2 { font-size: 22px; }
+  .home-body .project-meta p { font-size: 11px; }
+  .home-body .project-actions { top: 12px; right: 12px; }
+
+  .home-body .floating-contacts {
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: calc(100vw - 20px);
+  }
+
+  .hire-modal input,
+  .hire-modal select,
+  .hire-modal textarea,
+  .order-page input,
+  .order-page select,
+  .order-page textarea { font-size: 16px; }
+
+  .hire-panel { max-height: calc(100svh - 24px); overflow-y: auto; }
+}
+
+.home-body .hero-action-button,
+.home-body .artlist-order-button,
+.order-page .artlist-order-button,
+.order-page .order-submit {
+  border: 1px solid rgba(255,255,255,0.32);
+  background: rgba(255,255,255,0.12);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.34), 0 10px 28px rgba(0,0,0,0.22);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+.home-body .hero-action-button--order,
+.order-page .order-submit { background: rgba(107,84,204,0.42); }
+.home-body .hero-action-button--hire { background: rgba(214,177,65,0.42); }
+
+.home-body .project-image,
+.home-body .project-player,
+.home-body .project-gallery-trigger {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.home-body .project-overlay {
+  touch-action: manipulation;
+}
+
 .order-page .order-title {
   font-family: "Inter", sans-serif;
   font-size: 24px;

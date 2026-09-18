@@ -186,7 +186,6 @@
         event.preventDefault();
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
-        modal.querySelector('input')?.focus();
       });
     });
     modal.querySelectorAll('[data-close-hire]').forEach((trigger) => trigger.addEventListener('click', close));

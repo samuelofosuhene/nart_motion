@@ -495,13 +495,16 @@
         const pdf = createOrderPdf(order);
         const filename = `${order.orderId}-project-order.pdf`;
         const blob = pdf.output('blob');
-        const pdfUrl = await uploadOrderPdf(blob, filename);
+        let pdfUrl = 'PDF link pending storage setup.';
+        try {
+          pdfUrl = await uploadOrderPdf(blob, filename);
+        } catch (storageError) {
+          console.warn('Order PDF storage unavailable. Sending order without hosted link.', storageError);
+        }
         await sendOrderEmail(order, pdfUrl);
         showSuccess(pdfUrl);
       } catch (error) {
-        statusNode.textContent = error.message.startsWith('PDF upload failed')
-          ? 'The order could not be sent because PDF storage is not configured yet.'
-          : 'The order could not be sent. Please try again.';
+        statusNode.textContent = 'The order could not be sent. Please try again.';
         console.error(error);
       } finally {
         submitButton.disabled = false;
