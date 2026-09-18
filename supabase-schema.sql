@@ -96,3 +96,21 @@ $$;
 grant execute on function public.get_project_stats(text, uuid) to anon;
 grant execute on function public.record_project_view(text, uuid) to anon;
 grant execute on function public.toggle_project_like(text, uuid) to anon;
+
+-- Hosted order PDFs: clients upload through the order form and receive a public link.
+insert into storage.buckets (id, name, public)
+values ('order-pdfs', 'order-pdfs', true)
+on conflict (id) do update set public = true;
+
+drop policy if exists "Allow public order PDF uploads" on storage.objects;
+drop policy if exists "Allow public order PDF reads" on storage.objects;
+
+create policy "Allow public order PDF uploads"
+on storage.objects for insert
+to anon
+with check (bucket_id = 'order-pdfs');
+
+create policy "Allow public order PDF reads"
+on storage.objects for select
+to anon
+using (bucket_id = 'order-pdfs');

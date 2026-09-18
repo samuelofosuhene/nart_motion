@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order a project | Nart_Motion</title>
+  <link rel="stylesheet" href="artlist.css" />
+</head>
+<body class="order-page">
+  <header class="site-header artlist-header">
+    <a href="index.html" class="brand-mark" aria-label="Go to homepage">Nart</a>
+    <nav class="nav-links artlist-nav" aria-label="Main navigation">
+      <a href="index.html#works">Works</a>
+      <a href="index.html#about">About</a>
+      <a href="index.html#contact">Contact</a>
+    </nav>
+    <a class="artlist-order-button" href="index.html">Back home</a>
+  </header>
+
+  <main class="order-shell">
+    <section class="order-hero">
+      <div>
+        <h1 class="order-title">Order a project<small>Built for brands, campaigns, and motion-led storytelling.</small></h1>
+      </div>
+      <div class="order-card">
+        <div class="order-meta">
+          <div><strong>Prepared by:</strong> Nart — Motion Design</div>
+          <div><strong>Effective:</strong> September 2026</div>
+          <div><strong>Rates:</strong> GHS · project-based</div>
+          <div><strong>Turnaround:</strong> 7–14 days</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="order-panel">
+      <form id="order-form" class="order-form">
+        <div class="field">
+          <label for="service">Service</label>
+          <select id="service" name="service">
+            <option value="social">Social / Short-Form Motion</option>
+            <option value="kinetic">Kinetic Typography</option>
+            <option value="explainer">Explainer / Product (SaaS)</option>
+            <option value="spec">Spec / Commercial Ad Spot</option>
+            <option value="event">Event &amp; Nightclub Visuals</option>
+            <option value="blender">3D &amp; Simulation (Blender)</option>
+            <option value="logo">Logo Animation / Stings</option>
+            <option value="vfx">Compositing &amp; VFX Cleanup</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="scope">Project scope</label>
+          <select id="scope" name="scope">
+            <option value="standard">Standard</option>
+            <option value="premium">Premium</option>
+            <option value="full">Full campaign</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label for="client-email">Your email</label>
+          <input id="client-email" name="clientEmail" type="email" required placeholder="you@company.com" />
+        </div>
+
+        <div class="field full">
+          <button type="button" class="details-trigger" id="open-service-details">View service details</button>
+        </div>
+
+        <div class="field">
+          <label for="main-runtime-input">Custom runtime (seconds)</label>
+          <input id="main-runtime-input" type="number" min="1" max="600" step="1" inputmode="numeric" />
+          <span class="inline-note">GHS 28 is added or reduced per second from the service default.</span>
+        </div>
+
+        <div class="field full">
+          <label for="brief">Project brief</label>
+          <textarea id="brief" name="brief" placeholder="Tell me about the objective, platform, desired vibe, duration, and any references."></textarea>
+        </div>
+
+        <div class="field full">
+          <label>Deliverables</label>
+          <div class="options-grid">
+            <label class="check-item"><span>Rush delivery</span><input type="checkbox" name="rush" /></label>
+            <label class="check-item"><span>Voiceover / audio sync</span><input type="checkbox" name="audio" /></label>
+            <label class="check-item"><span>Multiple aspect ratios</span><input type="checkbox" name="formats" /></label>
+            <label class="check-item"><span>Project files supplied <small>+GHS 100+</small></span><input type="checkbox" name="projectFiles" /></label>
+          </div>
+        </div>
+
+        <div class="field full">
+          <div class="estimate-box" aria-live="polite">
+            <div class="label">Estimated project total</div>
+            <div class="value" id="estimate">GHS 1,200</div>
+            <div class="range" id="estimate-range">Typical range: GHS 800 – 1,800</div>
+          </div>
+        </div>
+
+        <div class="order-actions full">
+          <button class="order-submit" type="submit">Proceed</button>
+          <span class="inline-note" id="order-status">PDF order summary<br />Direct email delivery<br />Ready to send</span>
+        </div>
+      </form>
+    </section>
+  </main>
+
+    <div class="order-success-modal" id="order-success-modal" aria-hidden="true">
+      <div class="order-success-panel" role="status" aria-live="polite">
+        <div class="success-mark">✓</div>
+        <h2>Order received</h2>
+        <p>Your order has been sent. The PDF link is on its way to Nart_Motion.</p>
+        <button class="order-submit" type="button" id="close-success">Done</button>
+      </div>
+    </div>
+
+  <div class="service-detail-modal" id="service-detail-modal" aria-hidden="true">
+    <div class="service-detail-panel" role="dialog" aria-modal="true" aria-labelledby="service-detail-title">
+      <div class="service-detail-header">
+        <h3 id="service-detail-title">Service details</h3>
+        <button class="service-detail-close" type="button" aria-label="Close">×</button>
+      </div>
+      <div class="service-detail-body">
+        <div class="service-detail-description" id="service-detail-description"></div>
+        <ul class="service-detail-list" id="service-detail-list"></ul>
+        <label class="service-choice-field" for="service-variety">Project variety
+          <select id="service-variety"></select>
+        </label>
+        <div class="service-runtime">
+          <span>Default animation runtime</span>
+          <strong id="service-runtime">30s – 45s</strong>
+        </div>
+        <button type="button" class="order-submit service-apply-button" id="apply-service-details">Apply selection</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const serviceConfig = {
+      social: {
+        label: 'Social / Short-Form Motion',
+        description: 'Fast, punchy motion for Instagram reels, short ads, and social-first storytelling that keeps attention within the first few seconds.',
+        deliverables: ['Short-form edit structure', 'Motion graphics', 'Captions and timing', 'Platform-ready exports'],
+        runtime: '30s – 45s',
+        defaultRuntime: 38,
+        varieties: ['Social reel', 'Short-form ad', 'Campaign cutdown'],
+        base: 1200,
+        fileFee: 100,
+        min: 800,
+        max: 1800
+      },
+      kinetic: {
+        label: 'Kinetic Typography',
+        description: 'Text-led motion designed to amplify a message, highlight key points, and turn static copy into a visual performance.',
+        deliverables: ['Typography animation', 'Dynamic text timing', 'Sound design support', 'Final motion delivery'],
+        runtime: '20s – 35s',
+        defaultRuntime: 28,
+        varieties: ['Lyric typography', 'Quote animation', 'Editorial type system'],
+        base: 1700,
+        fileFee: 120,
+        min: 1000,
+        max: 2400
+      },
+      explainer: {
+        label: 'Explainer / Product (SaaS)',
+        description: 'Feature walkthroughs, onboarding narratives, and product promos that explain your offering clearly while feeling premium and cinematic.',
+        deliverables: ['Feature walkthroughs', 'Onboarding sequences', 'Product promos', 'Brand-aligned motion design'],
+        runtime: '30s – 45s',
+        defaultRuntime: 38,
+        varieties: ['Feature walkthrough', 'Onboarding flow', 'Product promo'],
+        base: 2600,
+        fileFee: 160,
+        min: 1600,
+        max: 3600
+      },
+      spec: {
+        label: 'Spec / Commercial Ad Spot',
+        description: 'Signature spot-style motion for launches, product pitches, and high-impact brand moments designed to stand out in a crowded feed.',
+        deliverables: ['Commercial pacing', 'Shot planning', 'Motion graphics polish', 'Brand hook development'],
+        runtime: '15s – 30s',
+        defaultRuntime: 23,
+        varieties: ['Launch spot', 'Commercial concept', 'Product film'],
+        base: 3700,
+        fileFee: 220,
+        min: 2200,
+        max: 5200
+      },
+      event: {
+        label: 'Event & Nightclub Visuals',
+        description: 'High-energy event graphics and nightlife visuals built for atmosphere, hype, and audience engagement in real time.',
+        deliverables: ['Stage visuals', 'Intro sequences', 'Social promo edits', 'Event graphics pack'],
+        runtime: '10s – 20s',
+        defaultRuntime: 15,
+        varieties: ['Stage visuals', 'Event opener', 'Social promo pack'],
+        base: 2300,
+        fileFee: 150,
+        min: 1300,
+        max: 3400
+      },
+      blender: {
+        label: '3D & Simulation (Blender)',
+        description: 'Cinematic 3D motion, product animation, and simulation work for brands that need extra depth, texture, and visual wow.',
+        deliverables: ['3D scene setup', 'Simulation or motion', 'Lighting and rendering', 'Final compositing'],
+        runtime: '20s – 40s',
+        defaultRuntime: 30,
+        varieties: ['Product 3D', 'Simulation', 'Abstract visual'],
+        base: 4200,
+        fileFee: 350,
+        min: 2200,
+        max: 6800
+      },
+      logo: {
+        label: 'Logo Animation / Stings',
+        description: 'Identity-led motion to give a brand a stronger intro, stronger recognition, and a more memorable transition across content.',
+        deliverables: ['Logo reveal', 'Brand sting concept', 'Monogram motion', 'Asset export pack'],
+        runtime: '5s – 12s',
+        defaultRuntime: 9,
+        varieties: ['Logo reveal', 'Brand sting', 'Social ident'],
+        base: 850,
+        fileFee: 100,
+        min: 500,
+        max: 1200
+      },
+      vfx: {
+        label: 'Compositing & VFX Cleanup',
+        description: 'Clean-up, compositing, and motion polish for footage that needs a sharper finish, a cleaner pass, or a stronger final look.',
+        deliverables: ['Cleanup pass', 'Compositing', 'Object removal', 'Final export'],
+        runtime: '10s – 25s',
+        defaultRuntime: 18,
+        varieties: ['Cleanup', 'Compositing', 'Object removal'],
+        base: 1600,
+        fileFee: 180,
+        min: 750,
+        max: 2300
+      }
+    };
+
+    const scopeBonus = { standard: 1, premium: 1.28, full: 1.5 };
+
+    const serviceSelect = document.getElementById('service');
+    const scopeSelect = document.getElementById('scope');
+    const estimateNode = document.getElementById('estimate');
+    const rangeNode = document.getElementById('estimate-range');
+    const form = document.getElementById('order-form');
+    const modal = document.getElementById('service-detail-modal');
+    const modalTitle = document.getElementById('service-detail-title');
+    const modalDescription = document.getElementById('service-detail-description');
+    const modalList = document.getElementById('service-detail-list');
+    const modalRuntime = document.getElementById('service-runtime');
+    const openDetailsButton = document.getElementById('open-service-details');
+    const closeButton = document.querySelector('.service-detail-close');
+    const statusNode = document.getElementById('order-status');
+    const successModal = document.getElementById('order-success-modal');
+    const closeSuccessButton = document.getElementById('close-success');
+    const varietySelect = document.getElementById('service-variety');
+    const runtimeInput = document.getElementById('main-runtime-input');
+    const applyServiceButton = document.getElementById('apply-service-details');
+    const supabaseUrl = 'https://qpeamauhipgmuzuauawo.supabase.co';
+    const supabaseKey = 'sb_publishable_qSu9ZJf_oTWbYTnSPvFt3A_2ENFdb-K';
+
+    const currency = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'GHS', maximumFractionDigits: 0 }).format(value);
+
+    const updateModal = () => {
+      const config = serviceConfig[serviceSelect.value];
+      modalTitle.textContent = config.label;
+      modalDescription.textContent = config.description;
+      modalList.innerHTML = config.deliverables.map((item) => `<li>${item}</li>`).join('');
+      modalRuntime.textContent = config.runtime;
+      varietySelect.replaceChildren(...config.varieties.map((variety) => new Option(variety, variety)));
+      runtimeInput.value = config.defaultRuntime;
+      runtimeInput.dataset.defaultRuntime = config.defaultRuntime;
+    };
+
+    const showModal = () => {
+      updateModal();
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+    };
+
+    const hideModal = () => {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+    };
+
+    const getEstimate = () => {
+      const service = serviceConfig[serviceSelect.value];
+      const scope = scopeBonus[scopeSelect.value] || 1;
+      const runtime = Number(runtimeInput.value) || service.defaultRuntime;
+      const runtimeAdjustment = (runtime - service.defaultRuntime) * 28;
+      const rush = form.querySelector('[name="rush"]').checked ? 1.22 : 1;
+      const audio = form.querySelector('[name="audio"]').checked ? 1.14 : 1;
+      const formats = form.querySelector('[name="formats"]').checked ? 1.1 : 1;
+      const projectFiles = form.querySelector('[name="projectFiles"]').checked;
+      const fileFee = projectFiles ? service.fileFee : 0;
+
+      const adjusted = Math.max(0, (service.base + runtimeAdjustment) * scope * rush * audio * formats + fileFee);
+      const min = Math.max(0, (service.min + runtimeAdjustment) * scope + fileFee);
+      const max = Math.max(0, (service.max + runtimeAdjustment) * scope + fileFee);
+
+      return { adjusted, min, max };
+    };
+
+    const updateEstimate = () => {
+      const { adjusted, min, max } = getEstimate();
+      estimateNode.textContent = currency(Math.round(adjusted));
+      rangeNode.textContent = `Typical range: ${currency(min)} – ${currency(max)}`;
+    };
+
+    serviceSelect.addEventListener('change', () => {
+      updateEstimate();
+      updateModal();
+      showModal();
+    });
+
+    runtimeInput.addEventListener('input', updateEstimate);
+    applyServiceButton.addEventListener('click', () => {
+      updateEstimate();
+      hideModal();
+      statusNode.textContent = `${varietySelect.value} selected at ${runtimeInput.value}s.`;
+    });
+
+    scopeSelect.addEventListener('change', updateEstimate);
+    form.querySelectorAll('input[type="checkbox"]').forEach((input) => input.addEventListener('change', updateEstimate));
+    openDetailsButton.addEventListener('click', showModal);
+    closeButton.addEventListener('click', hideModal);
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) hideModal();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+        hideModal();
+      }
+    });
+
+    const getOrderData = () => {
+      const { adjusted, min, max } = getEstimate();
+      const service = serviceConfig[serviceSelect.value];
+      const addOns = Array.from(form.querySelectorAll('input[type="checkbox"]:checked'))
+        .map((input) => input.closest('.check-item')?.querySelector('span')?.textContent.trim())
+        .filter(Boolean);
+      const brief = document.getElementById('brief').value.trim() || 'No additional notes provided yet.';
+      const clientEmail = document.getElementById('client-email').value.trim();
+      const orderId = `NART-${Date.now().toString(36).toUpperCase()}`;
+      return { adjusted, min, max, service, addOns, brief, clientEmail, orderId, scope: scopeSelect.options[scopeSelect.selectedIndex].text, variety: varietySelect.value, runtime: runtimeInput.value };
+    };
+
+    const createOrderPdf = (order) => {
+      if (!window.jspdf?.jsPDF) throw new Error('PDF generator is unavailable.');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit: 'pt', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      let y = 58;
+      pdf.setFillColor(16, 16, 16);
+      pdf.rect(0, 0, pageWidth, 100, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(22);
+      pdf.text('Nart_Motion', 42, 52);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(10);
+      pdf.text('Project order summary', 42, 72);
+      pdf.setTextColor(25, 25, 25);
+      y = 140;
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(16);
+      pdf.text('Order details', 42, y);
+      y += 30;
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(11);
+      const rows = [
+        ['Order ID', order.orderId],
+        ['Client email', order.clientEmail],
+        ['Service', order.service.label],
+        ['Scope', order.scope],
+        ['Variety', order.variety],
+        ['Runtime', `${order.runtime}s`],
+        ['Estimate', currency(Math.round(order.adjusted))],
+        ['Typical range', `${currency(order.min)} - ${currency(order.max)}`],
+        ['Add-ons', order.addOns.length ? order.addOns.join(', ') : 'None']
+      ];
+      rows.forEach(([label, value]) => {
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${label}:`, 42, y);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(String(value), 145, y);
+        y += 22;
+      });
+      y += 20;
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Project brief', 42, y);
+      y += 20;
+      pdf.setFont('helvetica', 'normal');
+      const briefLines = pdf.splitTextToSize(order.brief, pageWidth - 84);
+      pdf.text(briefLines, 42, y);
+      y += briefLines.length * 16 + 34;
+      pdf.setDrawColor(215, 215, 215);
+      pdf.line(42, y, pageWidth - 42, y);
+      y += 24;
+      pdf.setFontSize(9);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text('Prepared through nart-motion portfolio order form.', 42, y);
+      return pdf;
+    };
+
+    const uploadOrderPdf = async (blob, filename) => {
+      const response = await fetch(`${supabaseUrl}/storage/v1/object/order-pdfs/${encodeURIComponent(filename)}`, {
+        method: 'POST',
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/pdf',
+          'x-upsert': 'false'
+        },
+        body: blob
+      });
+      if (!response.ok) throw new Error(`PDF upload failed: ${response.status}`);
+      return `${supabaseUrl}/storage/v1/object/public/order-pdfs/${encodeURIComponent(filename)}`;
+    };
+
+    const sendOrderEmail = async (order, pdfUrl) => {
+      const addOns = order.addOns.length ? order.addOns.join(', ') : 'None';
+      const subject = `Project order ${order.orderId} - ${order.service.label}`;
+      const message = `I submitted a project order.\nOrder ID: ${order.orderId}\nService: ${order.service.label}\nVariety: ${order.variety}\nRuntime: ${order.runtime}s\nScope: ${order.scope}\nEstimate: ${currency(Math.round(order.adjusted))}\nAdd-ons: ${addOns}\nBrief: ${order.brief}\n\nPDF order summary: ${pdfUrl}`;
+      const response = await fetch('https://formsubmit.co/ajax/branart4@gmail.com', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          _subject: subject,
+          _replyto: order.clientEmail,
+          _captcha: 'false',
+          _template: 'table',
+          message,
+          order_id: order.orderId,
+          pdf_link: pdfUrl
+        })
+      });
+      if (!response.ok) throw new Error(`Email delivery failed: ${response.status}`);
+      const result = await response.json();
+      if (result.success === false) throw new Error('Email delivery was not accepted.');
+      return result;
+    };
+
+    const showSuccess = (pdfUrl) => {
+      statusNode.textContent = 'Order sent successfully.';
+      successModal.classList.add('is-open');
+      successModal.setAttribute('aria-hidden', 'false');
+      const canvas = document.createElement('canvas');
+      canvas.className = 'confetti-canvas';
+      document.body.append(canvas);
+      const context = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const pieces = Array.from({ length: 90 }, (_, index) => ({
+        x: canvas.width / 2,
+        y: canvas.height * 0.34,
+        vx: (Math.random() - 0.5) * 13,
+        vy: -Math.random() * 11 - 4,
+        size: Math.random() * 7 + 4,
+        rotation: Math.random() * 6,
+        color: ['#6b54cc', '#e5c45e', '#f5f2ee', '#8a76e5'][index % 4]
+      }));
+      const started = performance.now();
+      const animate = (time) => {
+        const elapsed = time - started;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        pieces.forEach((piece) => {
+          piece.x += piece.vx;
+          piece.vy += 0.28;
+          piece.y += piece.vy;
+          piece.rotation += 0.14;
+          context.save();
+          context.translate(piece.x, piece.y);
+          context.rotate(piece.rotation);
+          context.fillStyle = piece.color;
+          context.fillRect(-piece.size / 2, -piece.size / 2, piece.size, piece.size * 0.6);
+          context.restore();
+        });
+        if (elapsed < 2600) requestAnimationFrame(animate);
+        else canvas.remove();
+      };
+      requestAnimationFrame(animate);
+    };
+
+    const hideSuccess = () => {
+      successModal.classList.remove('is-open');
+      successModal.setAttribute('aria-hidden', 'true');
+    };
+
+    closeSuccessButton.addEventListener('click', hideSuccess);
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const submitButton = form.querySelector('.order-submit');
+      const order = getOrderData();
+      try {
+        const pdf = createOrderPdf(order);
+        const filename = `${order.orderId}-project-order.pdf`;
+        const blob = pdf.output('blob');
+        const pdfUrl = await uploadOrderPdf(blob, filename);
+        await sendOrderEmail(order, pdfUrl);
+        showSuccess(pdfUrl);
+      } catch (error) {
+        statusNode.textContent = error.message.startsWith('PDF upload failed')
+          ? 'The order could not be sent because PDF storage is not configured yet.'
+          : 'The order could not be sent. Please try again.';
+        console.error(error);
+      } finally {
+        submitButton.disabled = false;
+      }
+    });
+
+    updateEstimate();
+    updateModal();
+  </script>
+</body>
+</html>

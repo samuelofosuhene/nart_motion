@@ -124,11 +124,8 @@ const supabaseRpc = async (functionName, payload) => {
 
 const updateProjectStats = (card, stats) => {
   if (!stats) return;
-  card.querySelector('[data-view-count]').textContent = stats.views ?? 0;
-  card.querySelector('[data-like-count]').textContent = stats.likes ?? 0;
-  const likeButton = card.querySelector('[data-like-project]');
-  likeButton?.setAttribute('aria-pressed', String(Boolean(stats.liked)));
-  card.querySelector('[data-like-icon]')?.classList.toggle('is-liked', Boolean(stats.liked));
+  const viewCount = card.querySelector('[data-view-count]');
+  if (viewCount) viewCount.textContent = stats.views ?? 0;
 };
 
 const recordProjectView = async (card, title) => {
@@ -168,37 +165,30 @@ const openProjectOverlay = async (card, video, title) => {
 };
 
 document.querySelectorAll('.project').forEach((card, index) => {
-  const title = card.querySelector('h2')?.textContent || `Project ${index + 1}`;
+  const simpleTitles = ['Faren', 'Sema Ink', 'Turq', 'Medeama', 'Keyboard', 'GDPA', 'Edits', 'Intro Beat', 'Moosla', 'Fliers', 'SaaS'];
+  const titleNode = card.querySelector('h2');
+  const title = simpleTitles[index] || titleNode?.textContent || `Project ${index + 1}`;
+  if (titleNode) titleNode.textContent = title;
+  const descriptionNode = card.querySelector('.project-meta p');
+  if (descriptionNode) descriptionNode.textContent = 'View full project on Behance';
   const storageKey = getProjectStorageKey(title);
   const meta = card.querySelector('.project-meta');
   const media = card.querySelector('.project-player');
   if (!meta) return;
 
+  const description = meta.querySelector('p');
+  if (description) description.textContent = 'View full project on Behance';
+
   const actions = document.createElement('div');
   actions.className = 'project-actions';
-  actions.innerHTML = `<button type="button" class="project-action-button" data-like-project aria-label="Like ${title}" aria-pressed="false"><svg class="project-action-icon" data-like-icon viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 8.9c0 5.1-8.8 10.2-8.8 10.2S3.2 14 3.2 8.9A4.7 4.7 0 0 1 12 6.4a4.7 4.7 0 0 1 8.8 2.5Z" /></svg><span class="project-action-count" data-like-count>0</span></button><button type="button" class="project-action-button project-view-count" data-view-project aria-label="View ${title}"><svg class="project-action-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg><span class="project-action-count" data-view-count>0</span></button><button type="button" class="project-action-button" data-share-project aria-label="Share ${title}" aria-expanded="false"><svg class="project-action-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.5" /><circle cx="6" cy="12" r="2.5" /><circle cx="18" cy="19" r="2.5" /><path d="m8.2 11 7.5-4.4M8.2 13l7.5 4.4" /></svg></button>`;
-  meta.after(actions);
+  actions.innerHTML = `<button type="button" class="project-action-button project-view-count" data-view-project aria-label="View ${title}"><svg class="project-action-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" /><circle cx="12" cy="12" r="2.5" /></svg><span class="project-action-count" data-view-count>0</span></button>`;
+  card.append(actions);
 
-  const likeCount = actions.querySelector('[data-like-count]');
   const viewCount = actions.querySelector('[data-view-count]');
-  const likeButton = actions.querySelector('[data-like-project]');
-  const likeIcon = actions.querySelector('[data-like-icon]');
-  const shareButton = actions.querySelector('[data-share-project]');
-  likeCount.textContent = '0';
   viewCount.textContent = '0';
   supabaseRpc('get_project_stats', { p_project_key: storageKey, p_visitor_id: visitorId })
     .then((stats) => updateProjectStats(card, stats))
     .catch((error) => console.warn('Shared project stats unavailable.', error));
-
-  likeButton.addEventListener('click', async () => {
-    try {
-      const stats = await supabaseRpc('toggle_project_like', { p_project_key: storageKey, p_visitor_id: visitorId });
-      updateProjectStats(card, stats);
-      trackProjectInteraction(stats.liked ? 'project_like' : 'project_dislike', title);
-    } catch (error) {
-      console.warn('Shared project like unavailable.', error);
-    }
-  });
 
   const video = media?.querySelector('video');
   const galleryTrigger = card.querySelector('[data-gallery]');
@@ -215,29 +205,6 @@ document.querySelectorAll('.project').forEach((card, index) => {
     } else {
       galleryTrigger?.click();
     }
-  });
-
-  shareButton.addEventListener('click', async () => {
-    const shareUrl = window.location.href.split('?')[0] + `#${storageKey}`;
-    const shareText = `${title} by Nart_Motion`;
-    if (navigator.share) {
-      await navigator.share({ title: shareText, text: shareText, url: shareUrl }).catch(() => {});
-      return;
-    }
-
-    const existingMenu = actions.querySelector('.share-menu');
-    if (existingMenu) {
-      existingMenu.remove();
-      shareButton.setAttribute('aria-expanded', 'false');
-      return;
-    }
-
-    const menu = document.createElement('div');
-    menu.className = 'share-menu';
-    menu.innerHTML = `<a href="https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}" target="_blank" rel="noreferrer">WhatsApp</a><a href="mailto:?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent(shareUrl)}">Email</a>`;
-    shareButton.after(menu);
-    shareButton.setAttribute('aria-expanded', 'true');
-    trackProjectInteraction('project_share', title);
   });
 
   galleryTrigger?.addEventListener('click', () => {
@@ -293,4 +260,36 @@ document.addEventListener('keydown', (event) => {
     galleryModal.hidden = true;
     document.body.classList.remove('gallery-modal-open');
   }
+});
+
+const hireModal = document.querySelector('#hire-modal');
+const hireForm = document.querySelector('#hire-form');
+
+const closeHireModal = () => {
+  hireModal?.classList.remove('is-open');
+  hireModal?.setAttribute('aria-hidden', 'true');
+};
+
+document.querySelectorAll('[data-open-hire]').forEach((trigger) => {
+  trigger.addEventListener('click', (event) => {
+    event.preventDefault();
+    hireModal?.classList.add('is-open');
+    hireModal?.setAttribute('aria-hidden', 'false');
+    hireModal?.querySelector('input')?.focus();
+  });
+});
+
+hireModal?.querySelectorAll('[data-close-hire]').forEach((closeButton) => {
+  closeButton.addEventListener('click', closeHireModal);
+});
+
+hireForm?.addEventListener('submit', (event) => {
+  event.preventDefault();
+  const email = hireForm.querySelector('#hire-email').value.trim();
+  const location = hireForm.querySelector('#hire-location').value;
+  const description = hireForm.querySelector('#hire-description').value.trim();
+  const subject = `Hire enquiry - ${location} - Nart_Motion`;
+  const body = `Hello Nart,\n\nI would like to hire you for a ${location.toLowerCase()} project.\n\nWork description:\n${description}\n\nPlease reply to me at: ${email}`;
+  window.location.href = `mailto:branart4@gmail.com?reply-to=${encodeURIComponent(email)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  closeHireModal();
 });
