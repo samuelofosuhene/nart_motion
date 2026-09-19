@@ -192,10 +192,24 @@ const openProjectOverlay = async (card, video, title) => {
   }
 };
 
+const projectTitleAliases = {
+  'Sema Ink': 'Sema Ink',
+  Faren: 'Faren',
+  'Medeama Motion Kit': 'Medeama',
+  'Turq Logo & Brand Identity': 'Turq',
+  'Keyboard Animation': 'Keyboard',
+  'GDPA Visuals': 'GDPA',
+  Edits: 'Edits',
+  'Youtube Intro': 'Intro Motion',
+  'Moosla brand identity': 'Moosla',
+  'Still graphics': 'Fliers',
+  'SaaS Animation': 'SaaS'
+};
+
 document.querySelectorAll('.project').forEach((card, index) => {
-  const simpleTitles = ['Faren', 'Sema Ink', 'Turq', 'Medeama', 'Keyboard', 'GDPA', 'Edits', 'Intro Beat', 'Moosla', 'Fliers', 'SaaS'];
   const titleNode = card.querySelector('h2');
-  const title = simpleTitles[index] || titleNode?.textContent || `Project ${index + 1}`;
+  const sourceTitle = titleNode?.textContent.trim() || `Project ${index + 1}`;
+  const title = projectTitleAliases[sourceTitle] || sourceTitle;
   if (titleNode) titleNode.textContent = title;
   const descriptionNode = card.querySelector('.project-meta p');
   if (descriptionNode) descriptionNode.textContent = 'View full project on Behance';
@@ -250,7 +264,7 @@ document.querySelectorAll('.project').forEach((card, index) => {
   });
 });
 
-const normalizedProjectOrder = ['Sema Ink', 'Faren', 'Medeama', 'Turq', 'Keyboard', 'GDPA', 'Edits', 'Intro Beat', 'Moosla', 'Fliers', 'SaaS'];
+const normalizedProjectOrder = ['Sema Ink', 'Faren', 'Medeama', 'Turq', 'Keyboard', 'GDPA', 'Edits', 'Intro Motion', 'Moosla', 'Fliers', 'SaaS'];
 if (projectCarousel) {
   Array.from(projectCarousel.querySelectorAll('.project'))
     .sort((firstCard, secondCard) => normalizedProjectOrder.indexOf(firstCard.querySelector('h2')?.textContent.trim()) - normalizedProjectOrder.indexOf(secondCard.querySelector('h2')?.textContent.trim()))

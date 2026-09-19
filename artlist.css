@@ -2628,6 +2628,11 @@ a { color: inherit; }
   .home-body .floating-contacts.is-expanded { width: min(250px, calc(100vw - 20px)) !important; }
 }
 
+.home-body .project,
+.home-body .project:nth-child(n) {
+  order: initial !important;
+}
+
 /* Default contact state: both Gmail and WhatsApp visible. */
 .home-body .floating-contacts {
   width: 300px !important;
