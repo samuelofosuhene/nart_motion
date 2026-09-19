@@ -31,6 +31,18 @@ navLinks?.querySelectorAll('a').forEach((link) => {
 const yearNode = document.querySelector('#year');
 if (yearNode) yearNode.textContent = new Date().getFullYear();
 
+const projectCarousel = document.querySelector('.project-carousel');
+const recentProjectOrder = ['Sema Ink', 'Faren', 'Medeama Motion Kit', 'Turq Logo & Brand Identity', 'Keyboard Animation', 'GDPA Visuals', 'Edits', 'Youtube Intro', 'Moosla brand identity', 'Still graphics', 'SaaS Animation'];
+if (projectCarousel) {
+  const cards = Array.from(projectCarousel.querySelectorAll('.project'));
+  cards.sort((firstCard, secondCard) => {
+    const firstTitle = firstCard.querySelector('h2')?.textContent.trim() || '';
+    const secondTitle = secondCard.querySelector('h2')?.textContent.trim() || '';
+    return recentProjectOrder.indexOf(firstTitle) - recentProjectOrder.indexOf(secondTitle);
+  });
+  cards.forEach((card) => projectCarousel.append(card));
+}
+
 const revealObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.isIntersecting) {
@@ -237,6 +249,13 @@ document.querySelectorAll('.project').forEach((card, index) => {
     recordProjectView(card, title);
   });
 });
+
+const normalizedProjectOrder = ['Sema Ink', 'Faren', 'Medeama', 'Turq', 'Keyboard', 'GDPA', 'Edits', 'Intro Beat', 'Moosla', 'Fliers', 'SaaS'];
+if (projectCarousel) {
+  Array.from(projectCarousel.querySelectorAll('.project'))
+    .sort((firstCard, secondCard) => normalizedProjectOrder.indexOf(firstCard.querySelector('h2')?.textContent.trim()) - normalizedProjectOrder.indexOf(secondCard.querySelector('h2')?.textContent.trim()))
+    .forEach((card) => projectCarousel.append(card));
+}
 
 projectOverlay.querySelector('.project-overlay-close').addEventListener('click', (event) => {
   event.stopPropagation();

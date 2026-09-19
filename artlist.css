@@ -2653,6 +2653,35 @@ a { color: inherit; }
 }
 
 @media (max-width: 700px) {
+  .home-body .hero-content {
+    transform: translateY(clamp(18px, 5vh, 34px));
+  }
+
+  .home-body .artlist-hero {
+    margin-bottom: -2px;
+    border-bottom: 0 !important;
+  }
+
+  .home-body .artlist-marquee-wrap {
+    position: relative;
+    z-index: 2;
+    margin-top: -2px !important;
+    border-top: 0 !important;
+    outline: 0 !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .home-body .artlist-marquee-wrap {
+    margin-top: -1px;
+    border-top: 0 !important;
+    border-bottom: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+}
+
+@media (max-width: 700px) {
   .home-body .floating-contacts {
     left: 50% !important;
     right: auto !important;
