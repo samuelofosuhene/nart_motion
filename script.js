@@ -343,6 +343,10 @@ hireModal?.querySelectorAll('[data-close-hire]').forEach((closeButton) => {
 
 hireForm?.addEventListener('submit', (event) => {
   event.preventDefault();
+  if (window.location.protocol === 'file:') {
+    hireForm.querySelector('.runtime-note').textContent = 'Open the deployed HTTPS site before sending.';
+    return;
+  }
   const email = hireForm.querySelector('#hire-email').value.trim();
   const location = hireForm.querySelector('#hire-location').value;
   const description = hireForm.querySelector('#hire-description').value.trim();
@@ -350,25 +354,26 @@ hireForm?.addEventListener('submit', (event) => {
   const body = `Hello Nart,\n\nI would like to hire you for a ${location.toLowerCase()} project.\n\nWork description:\n${description}\n\nPlease reply to me at: ${email}`;
   const submitButton = hireForm.querySelector('button[type="submit"]');
   submitButton.disabled = true;
+  const payload = new URLSearchParams({
+    _subject: subject,
+    _replyto: email,
+    _captcha: 'false',
+    _template: 'table',
+    _url: window.location.href,
+    message: body,
+    client_email: email,
+    project_setup: location,
+    work_description: description
+  });
   fetch('https://formsubmit.co/ajax/branart4@gmail.com', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-    body: JSON.stringify({
-      _subject: subject,
-      _replyto: email,
-      _captcha: 'false',
-      _template: 'table',
-      message: body,
-      project_setup: location,
-      work_description: description
-    })
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+    body: payload.toString()
   }).then(async (response) => {
     if (!response.ok) throw new Error(`Hire delivery failed: ${response.status}`);
     const result = await response.json();
-    if (result.success === false) throw new Error('Hire delivery was not accepted.');
+    if (String(result.success).toLowerCase() !== 'true') throw new Error(result.message || 'Hire delivery was not accepted.');
     closeHireModal();
-    const whatsappText = `New hire enquiry from ${email}. Setup: ${location}.\n\n${description}`;
-    window.open(`https://wa.me/233541723985?text=${encodeURIComponent(whatsappText)}`, '_blank', 'noopener,noreferrer');
   }).catch((error) => {
     console.error(error);
     hireForm.querySelector('.runtime-note').textContent = 'Delivery is unavailable. Please try again.';
