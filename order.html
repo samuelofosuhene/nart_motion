@@ -426,6 +426,7 @@
         _replyto: order.clientEmail,
         _captcha: 'false',
         _template: 'table',
+        _url: window.location.href,
         message,
         order_id: order.orderId,
         client_email: order.clientEmail,
@@ -523,8 +524,10 @@
         await sendOrderEmail(order, pdfUrl);
         showSuccess(pdfUrl);
       } catch (error) {
-        statusNode.textContent = /activate|server|confirmation token|token not found/i.test(error.message)
-          ? 'FormSubmit rejected this request. Confirm the newest activation email from the deployed site, then try again.'
+        statusNode.textContent = /open this page through a web server|HTML files/i.test(error.message)
+          ? 'This page is not running from the deployed website. Open the HTTPS site before sending.'
+          : /activate|server|confirmation token|token not found/i.test(error.message)
+            ? 'FormSubmit activation is tied to the deployed domain. Submit once from that HTTPS site and confirm its newest email.'
           : 'The order could not be sent. Please try again.';
         console.error(error);
       } finally {
