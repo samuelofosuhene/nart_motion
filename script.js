@@ -1,5 +1,20 @@
 const menuToggle = document.querySelector('.menu-toggle');
 const navLinks = document.querySelector('.nav-links');
+const floatingContacts = document.querySelector('.floating-contacts');
+const floatingContactToggle = document.querySelector('.floating-contact-toggle');
+
+floatingContactToggle?.addEventListener('click', () => {
+  const isExpanded = floatingContacts.classList.toggle('is-expanded');
+  floatingContactToggle.setAttribute('aria-expanded', String(isExpanded));
+});
+
+let contactScrollTimer;
+window.addEventListener('scroll', () => {
+  if (!floatingContacts?.classList.contains('is-expanded')) return;
+  floatingContacts.classList.remove('is-expanded');
+  floatingContactToggle?.setAttribute('aria-expanded', 'false');
+  window.clearTimeout(contactScrollTimer);
+}, { passive: true });
 
 menuToggle?.addEventListener('click', () => {
   const isOpen = navLinks.classList.toggle('is-open');

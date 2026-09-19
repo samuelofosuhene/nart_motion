@@ -107,8 +107,8 @@
       <div class="order-success-panel" role="status" aria-live="polite">
         <div class="success-mark">✓</div>
         <h2>Order received</h2>
-        <p>Your order has been sent. The PDF link is on its way to Nart_Motion.</p>
-        <button class="order-submit" type="button" id="close-success">Done</button>
+        <p id="success-message">Your order has been sent. The PDF link is on its way to Nart_Motion.</p>
+        <button class="order-submit" type="button" id="close-success">Return home</button>
       </div>
     </div>
 
@@ -251,6 +251,7 @@
     const statusNode = document.getElementById('order-status');
     const successModal = document.getElementById('order-success-modal');
     const closeSuccessButton = document.getElementById('close-success');
+    const successMessageNode = document.getElementById('success-message');
     const varietySelect = document.getElementById('service-variety');
     const runtimeInput = document.getElementById('main-runtime-input');
     const applyServiceButton = document.getElementById('apply-service-details');
@@ -420,27 +421,39 @@
       const addOns = order.addOns.length ? order.addOns.join(', ') : 'None';
       const subject = `Project order ${order.orderId} - ${order.service.label}`;
       const message = `I submitted a project order.\nOrder ID: ${order.orderId}\nService: ${order.service.label}\nVariety: ${order.variety}\nRuntime: ${order.runtime}s\nScope: ${order.scope}\nEstimate: ${currency(Math.round(order.adjusted))}\nAdd-ons: ${addOns}\nBrief: ${order.brief}\n\nPDF order summary: ${pdfUrl}`;
+      const payload = new URLSearchParams({
+        _subject: subject,
+        _replyto: order.clientEmail,
+        _captcha: 'false',
+        _template: 'table',
+        message,
+        order_id: order.orderId,
+        client_email: order.clientEmail,
+        service: order.service.label,
+        variety: order.variety,
+        runtime: `${order.runtime}s`,
+        scope: order.scope,
+        estimate: currency(Math.round(order.adjusted)),
+        add_ons: addOns,
+        brief: order.brief,
+        pdf_link: pdfUrl
+      });
       const response = await fetch('https://formsubmit.co/ajax/branart4@gmail.com', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          _subject: subject,
-          _replyto: order.clientEmail,
-          _captcha: 'false',
-          _template: 'table',
-          message,
-          order_id: order.orderId,
-          pdf_link: pdfUrl
-        })
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
+        body: payload.toString()
       });
       if (!response.ok) throw new Error(`Email delivery failed: ${response.status}`);
       const result = await response.json();
-      if (result.success === false) throw new Error(result.message || 'Email delivery was not accepted.');
+      if (String(result.success).toLowerCase() !== 'true') throw new Error(result.message || 'Email delivery was not accepted.');
       return result;
     };
 
     const showSuccess = (pdfUrl) => {
       statusNode.textContent = 'Order sent successfully.';
+      successMessageNode.textContent = pdfUrl.startsWith('PDF link pending')
+        ? 'Your order has been sent. The PDF link will be available after storage is configured.'
+        : 'Your order has been sent. The PDF link is on its way to Nart_Motion.';
       successModal.classList.add('is-open');
       successModal.setAttribute('aria-hidden', 'false');
       const canvas = document.createElement('canvas');
@@ -478,17 +491,23 @@
         else canvas.remove();
       };
       requestAnimationFrame(animate);
+      window.setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 2800);
     };
 
     const hideSuccess = () => {
-      successModal.classList.remove('is-open');
-      successModal.setAttribute('aria-hidden', 'true');
+      window.location.href = 'index.html';
     };
 
     closeSuccessButton.addEventListener('click', hideSuccess);
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
+      if (window.location.protocol === 'file:') {
+        statusNode.textContent = 'Open this order page through http://localhost:8000 or your deployed HTTPS URL before sending.';
+        return;
+      }
       const submitButton = form.querySelector('.order-submit');
       const order = getOrderData();
       try {
@@ -504,8 +523,8 @@
         await sendOrderEmail(order, pdfUrl);
         showSuccess(pdfUrl);
       } catch (error) {
-        statusNode.textContent = error.message.includes('activate') || error.message.includes('server')
-          ? 'Email delivery needs one-time FormSubmit activation from the deployed site.'
+        statusNode.textContent = /activate|server|confirmation token|token not found/i.test(error.message)
+          ? 'FormSubmit rejected this request. Confirm the newest activation email from the deployed site, then try again.'
           : 'The order could not be sent. Please try again.';
         console.error(error);
       } finally {
